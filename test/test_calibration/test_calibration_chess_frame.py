@@ -88,9 +88,7 @@ def test_chess_frame():
 
 
 def test_frame():
-    dir_path = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), "../data/plant_1"
-    )
+    dir_path = "plant_1"
 
     c = phm_data.calibrations(dir_path)["side"]
 
@@ -124,10 +122,3 @@ def test_frame():
 
     print(pt2d)
     # print fr_cam.local_point((5000, 100, 0))
-
-
-if __name__ == "__main__":
-    for func_name in dir():
-        if func_name.startswith("test_"):
-            print("{func_name}".format(func_name=func_name))
-            eval(func_name)()

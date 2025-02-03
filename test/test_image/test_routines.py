@@ -120,10 +120,3 @@ def test_mean_image_3():
     assert (image == 0.1).all()
     assert image.ndim == 3
     assert image.shape == (25, 25, 3)
-
-
-if __name__ == "__main__":
-    for func_name in dir():
-        if func_name.startswith("test_"):
-            print("{func_name}".format(func_name=func_name))
-            eval(func_name)()

@@ -28,10 +28,3 @@ def test_skeletonize_thinning():
     ske = phm_img.skeletonize_erode_dilate(image)
     assert ske.shape == image.shape
     assert numpy.count_nonzero(ske) > 0
-
-
-if __name__ == "__main__":
-    for func_name in dir():
-        if func_name.startswith("test_"):
-            print("{func_name}".format(func_name=func_name))
-            eval(func_name)()

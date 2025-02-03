@@ -93,10 +93,3 @@ def test_camera_opencv_parameters():
     assert (new_cp.translation_vectors[80] == 0).all()
 
     os.remove("test_camera_opencv_parameters.json")
-
-
-if __name__ == "__main__":
-    for func_name in dir():
-        if func_name.startswith("test_"):
-            print("{func_name}".format(func_name=func_name))
-            eval(func_name)()

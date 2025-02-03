@@ -69,24 +69,9 @@ lemnatec2 = {
 
 
 def test_calibration_working():
-    name_dir = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), "../data/plant_1"
-    )
+    name_dir = os.path.join("plant_1")
 
     phm_data.chessboards(name_dir)
-
-
-def test_find_points():
-    pass
-    # image_points = {'side': [(478, 1969), (1550, 1976)],
-    #                 'top': [(473, 255), (1951, 258)]}
-    # # accelerate test
-    # guess = [(700, 700, -700), (-700, 700, -700)]
-    # calib = phm_calib.Calibration.from_dict(lemnatec2)
-    # pts = calib.find_points(image_points, guess, niter=2)
-    # expected = [[-710.670687,  732.762684, -936.617387],
-    #             [694.774179,  736.698475, -945.038652]]
-    # numpy.testing.assert_allclose(pts, expected, atol=1e-2)
 
 
 def test_find_frame():
@@ -109,21 +94,3 @@ def test_find_frame():
     ]
     numpy.testing.assert_allclose(fpts, expected, rtol=0.01)
 
-
-def test_find_camera():
-    pass
-    # image_points = [(483, 248), (1972, 242), (1487, 1796), (982, 1798)]
-    # target_points = [[-710.69782628, 732.79049079, -936.7542377],
-    #                  [694.68805505, 736.60566056, -944.58282677],
-    #                  [232.88649682, -735.81085532, -938.29077936],
-    #                  [-244.15336169, -736.29942847, -935.63550613]]
-    # image_size = (2454, 2056)
-    # calib = phm_calib.Calibration.from_dict(lemnatec2)
-    # fx, fy = calib._cameras['top'].get_intrinsic()[numpy.diag_indices(2)]
-    # camera = calib.find_camera(image_points, target_points, image_size,
-    #                            fixed_parameters={'_focal_length_x': fx,
-    #                                              '_focal_length_y': fy},
-    #                            guess=calib._cameras['top'])
-    # numpy.testing.assert_almost_equal(camera._pos_x, -10.49, decimal=2)
-    # numpy.testing.assert_almost_equal(camera._pos_y, 10.07, decimal=2)
-    # numpy.testing.assert_almost_equal(camera._focal_length_x, fx, decimal=2)

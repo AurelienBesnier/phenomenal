@@ -19,9 +19,7 @@ import openalea.phenomenal.data as phm_data
 
 
 def test_array_pixel_coordinates():
-    dir_path = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), "../data/plant_1"
-    )
+    dir_path = "plant_1"
     side_calibration = phm_data.calibrations(dir_path)["side"]
 
     pt3d = (-322.20389648, 162.67521638, -4866.89129462)
@@ -70,9 +68,7 @@ def test_array_pixel_coordinates():
 
 
 def test_array_camera_frame_local_point():
-    dir_path = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), "../data/plant_1"
-    )
+    dir_path = "plant_1"
     side_calibration = phm_data.calibrations(dir_path)["side"]
     camera_frame = side_calibration.get_camera_frame()
 
@@ -106,10 +102,7 @@ def test_array_camera_frame_local_point():
 
 def test_projection():
     angle = 0
-    dir_path = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), "../data/plant_1"
-    )
-
+    dir_path = "plant_1"
     side_calibration = phm_data.calibrations(dir_path)["side"]
     projection = side_calibration.get_projection(angle)
 
@@ -121,10 +114,3 @@ def test_projection():
 
     for pt_2d in result:
         assert tuple(pt_2d) == (1337.425449561377, 1070.8621710384346)
-
-
-if __name__ == "__main__":
-    for func_name in dir():
-        if func_name.startswith("test_"):
-            print("{func_name}".format(func_name=func_name))
-            eval(func_name)()

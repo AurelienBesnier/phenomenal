@@ -14,8 +14,11 @@ import glob
 import os
 import collections
 import pathlib
+from collections import defaultdict
+
 import numpy
 import cv2
+from importlib_resources import files, path
 
 from openalea.phenomenal.mesh import read_ply_to_vertices_faces
 from openalea.phenomenal.calibration import (
@@ -29,11 +32,12 @@ from openalea.phenomenal.object import VoxelGrid
 
 # ==============================================================================
 
-datadir = os.path.dirname(__file__).split("src")[0]
+# datadir = str(files("openalea.phenomenal_data")._paths[0])
+anchor = "openalea.phenomenal_data"
 
 
 def data_dir(name_dir, dtype="bin"):
-    return os.path.join(datadir, "doc", "examples", name_dir, f"{dtype}/")
+    return os.path.join(datadir, name_dir, f"{dtype}/")
 
 
 def _path_images(name_dir, dtype="bin"):
@@ -50,7 +54,7 @@ def _path_images(name_dir, dtype="bin"):
     d : dict of dict of string
         dict[id_camera][angle] = filename
     """
-    data_directory = os.path.join(datadir, "doc", "examples", name_dir, f"{dtype}/")
+    data_directory = os.path.join(datadir, name_dir, f"{dtype}/")
 
     d = collections.defaultdict(dict)
     for id_camera in ["side", "top"]:
@@ -102,11 +106,13 @@ def raw_images(name_dir):
     :return: dict[id_camera][angle] of loaded RGB image
     """
 
-    d = path_raw_images(name_dir)
-    for id_camera in d:
-        for angle in d[id_camera]:
-            img = cv2.imread(d[id_camera][angle], cv2.IMREAD_COLOR)
-            d[id_camera][angle] = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    cameras = [f.name for f in files(f"{anchor}.{name_dir}.raw").iterdir()]
+    d = defaultdict(dict)
+    for id_camera in cameras:
+        im_paths = [f for f in files(f"{anchor}.{name_dir}.raw.{id_camera}").iterdir()]
+        for p in im_paths:
+            img = cv2.imread(p, cv2.IMREAD_COLOR)
+            d[id_camera][int(p.stem)] = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     return d
 
 
@@ -119,10 +125,12 @@ def bin_images(name_dir):
     :return: dict[id_camera][angle] of loaded grayscale image
     """
 
-    d = path_bin_images(name_dir)
-    for id_camera in d:
-        for angle in d[id_camera]:
-            d[id_camera][angle] = cv2.imread(d[id_camera][angle], cv2.IMREAD_GRAYSCALE)
+    cameras = [f.name for f in files(f"{anchor}.{name_dir}.bin").iterdir()]
+    d = defaultdict(dict)
+    for id_camera in cameras:
+        im_paths = [f for f in files(f"{anchor}.{name_dir}.bin.{id_camera}").iterdir()]
+        for p in im_paths:
+            d[id_camera][int(p.stem)] = cv2.imread(p, cv2.IMREAD_GRAYSCALE)
     return d
 
 
@@ -135,12 +143,20 @@ def chessboard_images(name_dir):
     :return: dict[id_camera][angle] of loaded grayscale image
     """
 
-    d = path_chessboard_images(name_dir)
-    for id_camera in d:
-        for angle in d[id_camera]:
-            img = cv2.imread(d[id_camera][angle], cv2.IMREAD_COLOR)
-            d[id_camera][angle] = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    return (d,)
+    cameras = [
+        f.name
+        for f in files(f"{anchor}.{name_dir}.chessboard").iterdir()
+        if f.name != "points"
+    ]
+    d = defaultdict(dict)
+    for id_camera in cameras:
+        im_paths = [
+            f for f in files(f"{anchor}.{name_dir}.chessboard.{id_camera}").iterdir()
+        ]
+        for p in im_paths:
+            img = cv2.imread(p, cv2.IMREAD_COLOR)
+            d[id_camera][int(p.stem)] = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    return d
 
 
 # ==============================================================================
@@ -153,17 +169,12 @@ def chessboards(name_dir):
 
     :return: dict[id_camera] of camera calibration object
     """
-    data_directory = os.path.join(
-        datadir, "doc", "examples", name_dir, "chessboard/points/"
-    )
-
     chessboards = []
     for id_chessboard in [1, 2]:
-        chessboards.append(
-            Chessboard.load(
-                os.path.join(str(data_directory), f"chessboard_{id_chessboard}.json")
-            )
-        )
+        with path(
+            f"{anchor}.{name_dir}", f"chessboard/points/chessboard_{id_chessboard}.json"
+        ) as p:
+            chessboards.append(Chessboard.load(p))
 
     return chessboards
 
@@ -175,20 +186,18 @@ def image_points(name_dir):
 
     :return: dict[id_camera] of camera calibration object
     """
-    data_directory = os.path.join(
-        datadir, "doc", "examples", name_dir, "chessboard/points/"
-    )
-
     chessboards = {}
     keep = [42] + list(range(0, 360, 30))
     for id_chessboard in ["target_1", "target_2"]:
-        chessboard = Chessboard.load(
-            os.path.join(str(data_directory), f"image_points_{id_chessboard}.json")
-        )
-        for rotation in list(chessboard.image_points["side"]):
-            if rotation not in keep:
-                chessboard.image_points["side"].pop(rotation)
-        chessboards[id_chessboard] = chessboard
+        with path(
+            f"{anchor}.{name_dir}",
+            f"chessboard/points/image_points_{id_chessboard}.json",
+        ) as p:
+            chessboard = Chessboard.load(p)
+            for rotation in list(chessboard.image_points["side"]):
+                if rotation not in keep:
+                    chessboard.image_points["side"].pop(rotation)
+            chessboards[id_chessboard] = chessboard
 
     return chessboards
 
@@ -249,13 +258,13 @@ def calibrations(name_dir):
     :return: dict[id_camera] of camera calibration object
     """
 
-    data_directory = os.path.join(name_dir, "calibration/")
-
     calibration = {}
     for id_camera in ["side", "top"]:
-        calibration[id_camera] = OldCalibrationCamera.load(
-            os.path.join(data_directory, f"calibration_camera_{id_camera}.json")
-        )
+        with path(
+            f"{anchor}.{name_dir}", f"calibration/calibration_camera_{id_camera}.json"
+        ) as p:
+            print(p)
+            calibration[id_camera] = OldCalibrationCamera.load(p)
 
     return calibration
 
@@ -267,11 +276,11 @@ def new_calibrations(name_dir):
 
     """
 
-    file_name = os.path.join(name_dir, "calibration", "calibration_cameras.json")
-    return Calibration.load(file_name)
+    with path(f"{anchor}.{name_dir}","calibration/calibration_cameras.json") as p:
+        return Calibration.load(p)
 
 
-def voxel_grid(name_dir, plant_number=1, voxels_size=4):
+def voxel_grid(name_dir, voxels_size=4):
     """
     According to the plant number and the voxel size desired return the
     voxel_grid of the plant.
@@ -280,11 +289,12 @@ def voxel_grid(name_dir, plant_number=1, voxels_size=4):
     :param voxels_size: diameter of each voxel in mm (int)
     :return: voxel_grid object
     """
-    vg = VoxelGrid.read(
-        os.path.join(name_dir, f"plant_{plant_number}/voxels/{voxels_size}.npz")
-    )
+    with path(
+        f"{anchor}", f"{name_dir}/voxels/{voxels_size}.npz"
+    ) as p:
+        vg = VoxelGrid.read(str(p))
 
-    return vg
+        return vg
 
 
 # ==============================================================================
@@ -298,15 +308,15 @@ def tutorial_data_binarization_mask(name_dir):
 
     :return: list of image
     """
-
-    data_directory = os.path.join(datadir, "doc", "examples", name_dir, "plant_6/mask/")
     masks = []
-    for filename in ["mask_hsv.png", "mask_mean_shift.png"]:
-        masks.append(
-            cv2.imread(
-                os.path.join(data_directory, filename), flags=cv2.IMREAD_GRAYSCALE
+
+    with path(f"{anchor}.{name_dir}", "mask") as p:
+        for filename in ["mask_hsv.png", "mask_mean_shift.png"]:
+            masks.append(
+                cv2.imread(
+                    p.joinpath(filename), flags=cv2.IMREAD_GRAYSCALE
+                )
             )
-        )
 
     return masks
 
@@ -330,15 +340,16 @@ def synthetic_plant(name_dir, registration_point=(0, 0, 750)):
         out : vertices, faces, meta_data
 
     """
-    filename = os.path.join(name_dir, "synthetic_plant.ply")
+    with path(
+            f"{anchor}", f"{name_dir}/synthetic_plant.ply"
+    ) as filename:
+        vertices, faces, _ = read_ply_to_vertices_faces(filename)
+        vertices = numpy.array(vertices) * 10 - numpy.array([registration_point])
 
-    vertices, faces, _ = read_ply_to_vertices_faces(filename)
-    vertices = numpy.array(vertices) * 10 - numpy.array([registration_point])
+        with open(str(filename).replace("ply", "json"), "r", encoding="UTF8") as infile:
+            meta_data = json.load(infile)
 
-    with open(filename.replace("ply", "json"), "r", encoding="UTF8") as infile:
-        meta_data = json.load(infile)
-
-    return vertices, faces, meta_data
+        return vertices, faces, meta_data
 
 
 # ==============================================================================
@@ -347,8 +358,10 @@ def synthetic_plant(name_dir, registration_point=(0, 0, 750)):
 def mesh_mccormik_plant(name_dir):
     """According to name_dir return the mesh of plant from the McCormik paper"""
 
-    filename = os.path.join(name_dir, "segmentedMesh.ply")
+    with path(
+        f"{anchor}", f"{name_dir}/segmentedMesh.ply"
+    ) as filename:
 
-    vertices, faces, colors = read_ply_to_vertices_faces(filename)
+        vertices, faces, colors = read_ply_to_vertices_faces(filename)
 
-    return vertices, faces, colors
+        return vertices, faces, colors

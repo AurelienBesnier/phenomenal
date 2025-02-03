@@ -54,9 +54,7 @@ def test_chessboard_2():
 def test_chessboard_3():
     chess = phm_calib.Chessboard(50, (8, 6))
 
-    dir_path = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), "../data/plant_1"
-    )
+    dir_path = "plant_1"
     images = phm_data.chessboard_images(dir_path)[0]
     found = chess.detect_corners("side", 42, images["side"][42], check_order=False)
 
@@ -68,10 +66,3 @@ def test_chessboard_3():
         assert res.shape == (48, 2)
     else:
         assert False
-
-
-if __name__ == "__main__":
-    for func_name in dir():
-        if func_name.startswith("test_"):
-            print("{func_name}".format(func_name=func_name))
-            eval(func_name)()

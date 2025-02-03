@@ -7,7 +7,7 @@ import openalea.phenomenal.calibration as phm_calib
 
 
 def test_detect_corners():
-    path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../data/plant_1")
+    path = "plant_1"
     chessboard_images = phm_data.chessboard_images(path)[0]
     square_size_of_chessboard = 47  # In mm
     square_shape_of_chessboard = (8, 6)  # (8 square x 6 square on chessboard)
@@ -24,7 +24,7 @@ def test_detect_corners():
 
 
 def test_calibrate():
-    path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../data/plant_1")
+    path = "plant_1"
     image_points = phm_data.image_points(path)
     calibrator = phm_calib.Calibrator(
         south_camera=("side", 90, 5500),

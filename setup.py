@@ -79,5 +79,5 @@ setup(
         ],
     },
     # See MANIFEST.in
-    include_package_data=True,
+    include_package_data=False,
 )

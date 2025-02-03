@@ -390,10 +390,3 @@ def test_threshold_meanshift_enhance():
 
     bin_img = phm_img.threshold_meanshift_enhance(im1, mean_im, mask=mask)
     assert bin_img.shape == (25, 25)
-
-
-if __name__ == "__main__":
-    for func_name in dir():
-        if func_name.startswith("test_"):
-            print("{func_name}".format(func_name=func_name))
-            eval(func_name)()
