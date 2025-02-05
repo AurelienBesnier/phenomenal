@@ -77,14 +77,12 @@ Conda environment : https://docs.conda.io/en/latest/index.html
 #### From source
 
     # Install dependency with conda
-    mamba create -n phm -c conda-forge python
-    mamba activate phm
-    mamba install -c conda-forge cython numpy numba scipy scikit-image scikit-learn networkx opencv matplotlib vtk pytest skan orjson
+    mamba env create -n phm -f conda/environment.yml
 
     # Load phenomenal and install
     git clone https://github.com/openalea/phenomenal.git
     cd phenomenal
-    python setup.py develop
+    python setup.py install # to compile c++ extensions
 
     # (Optional) Test your installation
     cd test; pytest
