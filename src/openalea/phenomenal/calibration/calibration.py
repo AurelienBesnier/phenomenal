@@ -99,7 +99,7 @@ class CalibrationFrame:
     @staticmethod
     def load(filename):
         with open(filename, "r") as input_file:
-            save_class = json.load(input_file)
+            save_class = json.loads(input_file.read())
 
         c = CalibrationFrame.from_json(save_class)
         return c

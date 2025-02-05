@@ -37,6 +37,7 @@ requirements:
     - scipy
     - scikit-image
     - scikit-learn
+    - orjson
     - networkx
     - opencv [win or linux]
     - opencv >4.1.2 [osx]

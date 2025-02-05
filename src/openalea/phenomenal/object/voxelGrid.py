@@ -11,7 +11,7 @@ from __future__ import division, print_function, absolute_import
 
 import os
 import re
-import json
+import orjson
 import csv
 import numpy
 
@@ -19,20 +19,6 @@ from .image3D import Image3D
 
 
 # ==============================================================================
-
-
-class NumpyEncoder(json.JSONEncoder):
-    """Special json encoder for numpy types"""
-
-    def default(self, o):
-        if isinstance(o, numpy.integer):
-            return int(o)
-        if isinstance(o, numpy.floating):
-            return float(o)
-        if isinstance(o, numpy.ndarray):
-            return o.tolist()
-        return json.JSONEncoder.default(self, o)
-
 
 class VoxelGrid:
     def __init__(self, voxels_position, voxels_size):
@@ -207,15 +193,15 @@ class VoxelGrid:
         with open(filename, "w", encoding="UTF8") as f:
             data = {"voxels_size": self.voxels_size}
             vp = list(map(tuple, self.voxels_position))
-            data["voxels_position"] = json.dumps(vp, cls=NumpyEncoder)
-            json.dump(data, f)
+            data["voxels_position"] = orjson.dumps(vp, option=orjson.OPT_SERIALIZE_NUMPY).decode("utf-8")
+            f.write(orjson.dumps(data).decode("utf-8"))
 
     @staticmethod
     def read_from_json(filename):
         with open(filename, "r", encoding="UTF8") as f:
-            data = json.load(f)
+            data = orjson.loads(f.read())
             voxels_size = data["voxels_size"]
-            voxels_position = json.loads(data["voxels_position"])
+            voxels_position = orjson.loads(data["voxels_position"])
 
             return VoxelGrid(voxels_position, voxels_size)
 
@@ -239,7 +225,6 @@ class VoxelGrid:
                 z = float(point_3d[2])
 
                 voxels_position.append((x, y, z))
-        f.close()
 
         return VoxelGrid(voxels_position, voxels_size)
 

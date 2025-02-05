@@ -9,7 +9,7 @@
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
-import json
+import orjson
 import os
 from collections import defaultdict
 
@@ -202,7 +202,6 @@ def calibrations(name_dir):
         with path(
             f"{anchor}.{name_dir}", f"calibration/calibration_camera_{id_camera}.json"
         ) as p:
-            print(p)
             calibration[id_camera] = OldCalibrationCamera.load(p)
 
     return calibration
@@ -224,7 +223,6 @@ def voxel_grid(name_dir, voxels_size=4):
     According to the plant number and the voxel size desired return the
     voxel_grid of the plant.
 
-    :param plant_number: number of the plant desired (int)
     :param voxels_size: diameter of each voxel in mm (int)
     :return: voxel_grid object
     """
@@ -278,7 +276,7 @@ def synthetic_plant(name_dir, registration_point=(0, 0, 750)):
         vertices = numpy.array(vertices) * 10 - numpy.array([registration_point])
 
         with open(str(filename).replace("ply", "json"), "r", encoding="UTF8") as infile:
-            meta_data = json.load(infile)
+            meta_data = orjson.loads(infile.read())
 
         return vertices, faces, meta_data
 

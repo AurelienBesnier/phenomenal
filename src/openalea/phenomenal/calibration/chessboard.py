@@ -10,7 +10,7 @@
 from __future__ import division, print_function, absolute_import
 
 import collections
-import json
+import orjson
 import os
 
 import cv2
@@ -351,7 +351,7 @@ class Chessboard(object):
             save_class["image_sizes"] = self.image_sizes
 
         with open(filename, "w") as output_file:
-            json.dump(
+            orjson.dump(
                 save_class,
                 output_file,
                 sort_keys=True,
@@ -378,7 +378,7 @@ class Chessboard(object):
     @staticmethod
     def load(filename):
         with open(filename, "r") as input_file:
-            save_class = json.load(input_file)
+            save_class = orjson.loads(input_file.read())
 
             square_size = float(save_class["square_size"])
             shape = [int(val) for val in save_class["shape"]]
@@ -414,7 +414,7 @@ class Chessboard(object):
         return chessboard
 
 
-class Chessboards(object):
+class Chessboards:
     """A class for handling a collection of Chessboards objects imaged in the same system"""
 
     def __init__(self, chessboards):
