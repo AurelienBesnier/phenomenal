@@ -12,7 +12,6 @@
 from __future__ import division, print_function
 
 import numpy
-import os
 
 import openalea.phenomenal.data as phm_data
 import openalea.phenomenal.calibration as phm_calib

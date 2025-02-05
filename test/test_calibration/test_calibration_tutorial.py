@@ -1,7 +1,5 @@
 """Test computation used in calibration tutorial (examples/calibration)"""
 
-import os
-
 import openalea.phenomenal.data as phm_data
 import openalea.phenomenal.calibration as phm_calib
 

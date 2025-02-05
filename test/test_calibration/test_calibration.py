@@ -93,4 +93,3 @@ def test_find_frame():
         (-244.093682, -736.321985, 0),
     ]
     numpy.testing.assert_allclose(fpts, expected, rtol=0.01)
-

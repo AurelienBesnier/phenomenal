@@ -13,7 +13,6 @@ from __future__ import division, print_function
 
 import math
 import numpy
-import os
 
 import openalea.phenomenal.calibration as phm_calib
 import openalea.phenomenal.data as phm_data

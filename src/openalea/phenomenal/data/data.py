@@ -10,10 +10,7 @@
 from __future__ import division, print_function, absolute_import
 
 import json
-import glob
 import os
-import collections
-import pathlib
 from collections import defaultdict
 
 import numpy
@@ -38,64 +35,6 @@ anchor = "openalea.phenomenal_data"
 
 def data_dir(name_dir, dtype="bin"):
     return os.path.join(datadir, name_dir, f"{dtype}/")
-
-
-def _path_images(name_dir, dtype="bin"):
-    """According to the plant number return a dict[id_camera][angle] containing
-    filename of file.
-
-    Parameters
-    ----------
-
-    dtype :  "bin" or "raw" or "chessboard"
-
-    Returns
-    -------
-    d : dict of dict of string
-        dict[id_camera][angle] = filename
-    """
-    data_directory = os.path.join(datadir, name_dir, f"{dtype}/")
-
-    d = collections.defaultdict(dict)
-    for id_camera in ["side", "top"]:
-        filenames = glob.glob(os.path.join(str(data_directory), id_camera, "*"))
-        for filename in filenames:
-            angle = int(pathlib.Path(filename).stem)
-            d[id_camera][angle] = filename
-
-    return d
-
-
-def path_bin_images(name_dir):
-    """According to the plant number return a dict[id_camera][angle] containing
-    filename of the binary image.
-
-    Returns
-    -------
-    d : dict of dict of string
-        dict[id_camera][angle] = filename
-    """
-    return _path_images(name_dir, dtype="bin")
-
-
-def path_raw_images(name_dir):
-    """
-    According to the plant number return a dict[id_camera][angle] containing
-    filename of the raw image.
-
-    :return: dict[id_camera][angle] of filename
-    """
-    return _path_images(name_dir, dtype="raw")
-
-
-def path_chessboard_images(name_dir):
-    """
-    According to the plant number return a dict[id_camera][angle] containing
-    filename of the raw image.
-
-    :return: dict[id_camera][angle] of filename
-    """
-    return _path_images(name_dir, dtype="chessboard")
 
 
 def raw_images(name_dir):
@@ -276,7 +215,7 @@ def new_calibrations(name_dir):
 
     """
 
-    with path(f"{anchor}.{name_dir}","calibration/calibration_cameras.json") as p:
+    with path(f"{anchor}.{name_dir}", "calibration/calibration_cameras.json") as p:
         return Calibration.load(p)
 
 
@@ -289,9 +228,7 @@ def voxel_grid(name_dir, voxels_size=4):
     :param voxels_size: diameter of each voxel in mm (int)
     :return: voxel_grid object
     """
-    with path(
-        f"{anchor}", f"{name_dir}/voxels/{voxels_size}.npz"
-    ) as p:
+    with path(f"{anchor}", f"{name_dir}/voxels/{voxels_size}.npz") as p:
         vg = VoxelGrid.read(str(p))
 
         return vg
@@ -312,11 +249,7 @@ def tutorial_data_binarization_mask(name_dir):
 
     with path(f"{anchor}.{name_dir}", "mask") as p:
         for filename in ["mask_hsv.png", "mask_mean_shift.png"]:
-            masks.append(
-                cv2.imread(
-                    p.joinpath(filename), flags=cv2.IMREAD_GRAYSCALE
-                )
-            )
+            masks.append(cv2.imread(p.joinpath(filename), flags=cv2.IMREAD_GRAYSCALE))
 
     return masks
 
@@ -340,9 +273,7 @@ def synthetic_plant(name_dir, registration_point=(0, 0, 750)):
         out : vertices, faces, meta_data
 
     """
-    with path(
-            f"{anchor}", f"{name_dir}/synthetic_plant.ply"
-    ) as filename:
+    with path(f"{anchor}", f"{name_dir}/synthetic_plant.ply") as filename:
         vertices, faces, _ = read_ply_to_vertices_faces(filename)
         vertices = numpy.array(vertices) * 10 - numpy.array([registration_point])
 
@@ -358,10 +289,7 @@ def synthetic_plant(name_dir, registration_point=(0, 0, 750)):
 def mesh_mccormik_plant(name_dir):
     """According to name_dir return the mesh of plant from the McCormik paper"""
 
-    with path(
-        f"{anchor}", f"{name_dir}/segmentedMesh.ply"
-    ) as filename:
-
+    with path(f"{anchor}", f"{name_dir}/segmentedMesh.ply") as filename:
         vertices, faces, colors = read_ply_to_vertices_faces(filename)
 
         return vertices, faces, colors
