@@ -60,7 +60,7 @@ test:
   requires:
     - pytest
   source_files:
-    - doc/examples/data/**
+    - src/openalea/phenomenal_data/**
     - test/data/**
     - test/test_calibration/**
     - test/test_image/**
