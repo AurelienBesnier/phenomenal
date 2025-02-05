@@ -74,9 +74,9 @@ def test_tracking_mature(time_series):
             set([i for i in sq if i != -1])
         )  # no redundancy
 
-    output, _ = trackedplant.output()
+    ranks, features, checks = trackedplant.output()
 
-    assert [len(o) == len(s.leaves) for o, s in zip(output, trackedplant.snapshots)]
+    assert [len(o) == len(s.leaves) for o, s in zip(ranks, trackedplant.snapshots)]
 
     trackedplant.mature_leaf_tracking(gap=12.0)
     l1 = len(trackedplant.snapshots[0].sequence)
@@ -97,9 +97,9 @@ def test_tracking_growing(time_series):
 
     trackedplant.growing_leaf_tracking()
 
-    output, _ = trackedplant.output()
+    ranks, features, checks = trackedplant.output()
 
-    assert [len(o) == len(s.leaves) for o, s in zip(output, trackedplant.snapshots)]
+    assert [len(o) == len(s.leaves) for o, s in zip(ranks, trackedplant.snapshots)]
 
 
 def test_display(time_series):

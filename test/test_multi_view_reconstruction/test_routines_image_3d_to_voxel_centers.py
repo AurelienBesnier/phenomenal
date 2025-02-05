@@ -46,10 +46,3 @@ def test_simply_working_2():
     assert im.size == len(vpc.voxels_position)
     assert (im == image_3d).all()
     assert image_3d.world_coordinate == (1, 2, 3)
-
-
-if __name__ == "__main__":
-    for func_name in dir():
-        if func_name.startswith("test_"):
-            print("{func_name}".format(func_name=func_name))
-            eval(func_name)()

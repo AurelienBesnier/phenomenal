@@ -9,27 +9,15 @@
 #       OpenAlea WebSite : http://openalea.gforge.inria.fr
 #
 # ==============================================================================
-import os
-
 import openalea.phenomenal.data as phm_data
 import openalea.phenomenal.segmentation as phm_seg
 # ==============================================================================
-
-data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../data/")
-
-plant_1_dir = os.path.join(
-    os.path.dirname(os.path.realpath(__file__)), "../data/plant_1"
-)
-
-plant_1_bin__dir = os.path.join(
-    os.path.dirname(os.path.realpath(__file__)), "../data/plant_1/bin"
-)
-
+plant_1_dir = "plant_1"
 
 def test_running():
     bin_images = phm_data.bin_images(plant_1_dir)
     calibrations = phm_data.calibrations(plant_1_dir)
-    voxel_grid = phm_data.voxel_grid(data_dir, 1, 32)
+    voxel_grid = phm_data.voxel_grid(plant_1_dir, 32)
 
     # Load images binarize
 

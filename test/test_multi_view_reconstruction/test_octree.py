@@ -82,10 +82,3 @@ def test_octree_4():
 
     print(octree.root)
     print(octree.root.sons[0])
-
-
-if __name__ == "__main__":
-    for func_name in dir():
-        if func_name.startswith("test_"):
-            print("{func_name}".format(func_name=func_name))
-            eval(func_name)()

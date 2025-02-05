@@ -52,10 +52,3 @@ def test_simply_working_2():
     assert len(vpc.voxels_position) == 1
     assert tuple(vpc.voxels_position[0]) == (1, 42, 1)
     assert vpc.voxels_size == 16
-
-
-if __name__ == "__main__":
-    for func_name in dir():
-        if func_name.startswith("test_"):
-            print("{func_name}".format(func_name=func_name))
-            eval(func_name)()

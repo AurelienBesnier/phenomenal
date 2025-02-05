@@ -12,7 +12,6 @@
 from __future__ import division, print_function
 
 import numpy
-import os
 
 import openalea.phenomenal.data as phm_data
 import openalea.phenomenal.object as phm_obj
@@ -20,9 +19,7 @@ import openalea.phenomenal.multi_view_reconstruction as phm_mvr
 
 # ==============================================================================
 
-plant_1_dir = os.path.join(
-    os.path.dirname(os.path.realpath(__file__)), "../data/plant_1"
-)
+plant_1_dir = "plant_1"
 
 
 def test_split_voxel_centers_in_eight_1():
@@ -248,10 +245,3 @@ def test_reconstruction_3d_3():
     )
 
     assert len(vg.voxels_position) > 0
-
-
-if __name__ == "__main__":
-    for func_name in dir():
-        if func_name.startswith("test_"):
-            print("{func_name}".format(func_name=func_name))
-            eval(func_name)()

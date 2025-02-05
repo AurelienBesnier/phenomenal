@@ -25,10 +25,3 @@ def test_simply_working_1():
 
     assert pt_min == (0, 0, 0)
     assert pt_max == (10, 10, 10)
-
-
-if __name__ == "__main__":
-    for func_name in dir():
-        if func_name.startswith("test_"):
-            print("{func_name}".format(func_name=func_name))
-            eval(func_name)()
