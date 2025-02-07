@@ -9,7 +9,8 @@
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
-import numpy
+import numpy as np
+
 import scipy.signal
 # ==============================================================================
 
@@ -39,7 +40,7 @@ def smooth(x, window_len=11, window="hanning"):
 
     see also:
 
-    numpy.hanning, numpy.hamming, numpy.bartlett, numpy.blackman, numpy.convolve
+    np.hanning, np.hamming, np.bartlett, np.blackman, np.convolve
     scipy.signal.lfilter
 
     TODO: the window parameter could be the window itself if an array instead of a string
@@ -60,14 +61,14 @@ def smooth(x, window_len=11, window="hanning"):
             "Window is on of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'"
         )
 
-    s = numpy.r_[x[window_len - 1 : 0 : -1], x, x[-2 : -window_len - 1 : -1]]
+    s = np.r_[x[window_len - 1 : 0 : -1], x, x[-2 : -window_len - 1 : -1]]
     # print(len(s))
     if window == "flat":  # moving average
-        w = numpy.ones(window_len, "d")
+        w = np.ones(window_len, "d")
     else:
-        w = eval("numpy." + window + "(window_len)")
+        w = eval("np." + window + "(window_len)")
 
-    y = numpy.convolve(w / w.sum(), s, mode="valid")
+    y = np.convolve(w / w.sum(), s, mode="valid")
 
     return y
 
@@ -75,11 +76,11 @@ def smooth(x, window_len=11, window="hanning"):
 def peak_detection(values, order=3):
     order = max(1, int(order))
     max_peaks = scipy.signal.argrelextrema(
-        numpy.array(values), numpy.greater_equal, order=order
+        np.array(values), np.greater_equal, order=order
     )[0]
 
     min_peaks = scipy.signal.argrelextrema(
-        numpy.array(values), numpy.less_equal, order=order
+        np.array(values), np.less_equal, order=order
     )[0]
 
     max_peaks = [(i, values[i]) for i in max_peaks]

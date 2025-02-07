@@ -9,7 +9,8 @@
 # ==============================================================================
 from __future__ import print_function, absolute_import
 
-import numpy
+import numpy as np
+
 import scipy.interpolate
 import scipy.spatial
 import scipy.signal
@@ -25,10 +26,8 @@ from .plane_interception import (
 
 def maize_stem_peak_detection(values, stop_index):
     if len(values) > 15:
-        nodes_length_smooth2 = list(smooth(numpy.array(values), window_len=15))
-        _, min_peaks_smooth2 = peak_detection(
-            nodes_length_smooth2, order=3
-        )
+        nodes_length_smooth2 = list(smooth(np.array(values), window_len=15))
+        _, min_peaks_smooth2 = peak_detection(nodes_length_smooth2, order=3)
 
         i_peaks = [i for i, v in min_peaks_smooth2 if i <= stop_index]
         if i_peaks:
@@ -46,11 +45,11 @@ def maize_stem_peak_detection(values, stop_index):
 def get_nodes_radius(center, points, radius):
     x, y, z = center
 
-    result = numpy.sqrt(
+    result = np.sqrt(
         (points[:, 0] - x) ** 2 + (points[:, 1] - y) ** 2 + (points[:, 2] - z) ** 2
     )
 
-    index = numpy.where(result <= numpy.array(radius))
+    index = np.where(result <= np.array(radius))
     result = set(map(tuple, list(points[index])))
 
     return result
@@ -66,8 +65,8 @@ def stem_detection(
 ):
     # ==========================================================================
 
-    arr_stem_segment_voxel = numpy.array(list(stem_segment_voxel))
-    arr_stem_segment_path = numpy.array(stem_segment_path)
+    arr_stem_segment_voxel = np.array(list(stem_segment_voxel))
+    arr_stem_segment_path = np.array(stem_segment_path)
 
     closest_nodes_planes, _ = intercept_points_along_path_with_planes(
         arr_stem_segment_voxel,
@@ -78,7 +77,7 @@ def stem_detection(
     )
 
     arr_closest_nodes_planes = [
-        numpy.array(list(nodes)) for nodes in closest_nodes_planes
+        np.array(list(nodes)) for nodes in closest_nodes_planes
     ]
 
     distances = []
@@ -103,18 +102,18 @@ def stem_detection(
         min_peaks_stem = maize_stem_peak_detection(nodes_length, stop_index)
 
     else:
-        list_z = [numpy.mean(plane[:, 2]) for plane in arr_closest_nodes_planes]
-        stop_index = numpy.argmin(abs(numpy.array(list_z) - z_stem))
+        list_z = [np.mean(plane[:, 2]) for plane in arr_closest_nodes_planes]
+        stop_index = np.argmin(abs(np.array(list_z) - z_stem))
 
         nodes_length = list(map(float, map(len, arr_closest_nodes_planes)))
         min_peaks_stem = maize_stem_peak_detection(nodes_length, stop_index)
-        if stop_index not in numpy.array(min_peaks_stem)[:, 0]:
+        if stop_index not in np.array(min_peaks_stem)[:, 0]:
             min_peaks_stem += [(stop_index, 0.0)]
 
     window_length = max(4, len(nodes_length) // 8)
     window_length = window_length + 1 if window_length % 2 == 0 else window_length
     smooth_distances = scipy.signal.savgol_filter(
-        numpy.array(distances, dtype=numpy.uint16),
+        np.array(distances, dtype=np.uint16),
         window_length=window_length,
         polyorder=2,
     )
@@ -134,7 +133,7 @@ def stem_detection(
         max_index_min_peak = max(max_index_min_peak, i)
         radius[i] = smooth_distances[i] / 2.0
 
-        xx_yy_raw.append((i, numpy.array(distances)[i] / 2.0))
+        xx_yy_raw.append((i, np.array(distances)[i] / 2.0))
 
         stem_centred_path_min_peak.append((i, stem_segment_centred_path[i]))
         stem_voxel = stem_voxel.union(closest_nodes_planes[i])
@@ -147,29 +146,29 @@ def stem_detection(
     stem_centred_path_min_peak = [v for i, v in stem_centred_path_min_peak]
 
     xx_yy_raw.sort(key=lambda x: x[0])
-    xx = numpy.array([x for x, y in xx_yy_raw])
-    yy_raw = numpy.array([y for x, y in xx_yy_raw])
-    radius_raw = numpy.poly1d(
-        numpy.polyfit(xx, numpy.array(yy_raw), deg=min(len(min_peaks_stem) - 1, 5))
+    xx = np.array([x for x, y in xx_yy_raw])
+    yy_raw = np.array([y for x, y in xx_yy_raw])
+    radius_raw = np.poly1d(
+        np.polyfit(xx, np.array(yy_raw), deg=min(len(min_peaks_stem) - 1, 5))
     )
-    rad = numpy.array(distances)[: max_index_min_peak + 1] / 2.0
+    rad = np.array(distances)[: max_index_min_peak + 1] / 2.0
 
     # ==========================================================================
     # Interpolate
 
-    arr_stem_centred_path_min_peak = numpy.array(stem_centred_path_min_peak).transpose()
-    arr_stem_centred_path_min_peak = numpy.unique(
+    arr_stem_centred_path_min_peak = np.array(stem_centred_path_min_peak).transpose()
+    arr_stem_centred_path_min_peak = np.unique(
         arr_stem_centred_path_min_peak, axis=1
     )  # remove redundancies
     tck, _ = scipy.interpolate.splprep(arr_stem_centred_path_min_peak, k=1)
-    xxx, yyy, zzz = scipy.interpolate.splev(numpy.linspace(0, 1, 500), tck)
+    xxx, yyy, zzz = scipy.interpolate.splev(np.linspace(0, 1, 500), tck)
 
     # ==========================================================================
 
     arr_stem_voxels = set()
     for nodes in closest_nodes_planes[: max_index_min_peak + 1]:
         arr_stem_voxels = arr_stem_voxels.union(set(nodes))
-    arr_stem_voxels = numpy.array(list(arr_stem_voxels))
+    arr_stem_voxels = np.array(list(arr_stem_voxels))
 
     # ==========================================================================
 

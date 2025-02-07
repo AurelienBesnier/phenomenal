@@ -9,8 +9,14 @@
 # ==============================================================================
 from __future__ import print_function, division, absolute_import
 
-import numpy
+import numpy as np
 import networkx
+
+
+try:
+    import nx_cugraph as networkx
+except ImportError:
+    pass
 
 from .maize_stem_detection import stem_detection
 from ..object import VoxelOrgan, VoxelSegment, VoxelSegmentation
@@ -35,9 +41,9 @@ def _maize_base_stem_position_octree(octree, voxel_size, neighbor_size=5):
         func_if_true_add_node=func_if_true_add_node, func_get=func_get
     )
 
-    index = numpy.argmin(numpy.array(l)[:, 2])
+    index = np.argmin(np.array(l)[:, 2])
 
-    return numpy.array(l)[index]
+    return np.array(l)[index]
 
 
 def _merge(graph, voxels, remaining_voxels, percentage=50):
@@ -77,7 +83,7 @@ def get_highest_segment(segments, n_candidates=1):
     """
 
     # sort segments by descending height
-    segments.sort(key=lambda x: numpy.max(numpy.array(x.polyline)[-1, 2]), reverse=True)
+    segments.sort(key=lambda x: np.max(np.array(x.polyline)[-1, 2]), reverse=True)
 
     candidates = segments[:n_candidates]
 
@@ -85,11 +91,11 @@ def get_highest_segment(segments, n_candidates=1):
     tortuosity_min = float("+inf")
     highest_voxel_segment = None
     for segment in candidates:
-        pl = numpy.array(segment.polyline)
-        pl_length = numpy.sum(
-            [numpy.linalg.norm(pl[k] - pl[k + 1]) for k in range(len(pl) - 1)]
+        pl = np.array(segment.polyline)
+        pl_length = np.sum(
+            [np.linalg.norm(pl[k] - pl[k + 1]) for k in range(len(pl) - 1)]
         )
-        tortuosity = pl_length / numpy.linalg.norm(pl[0] - pl[-1])
+        tortuosity = pl_length / np.linalg.norm(pl[0] - pl[-1])
 
         if tortuosity < tortuosity_min:
             tortuosity_min = tortuosity

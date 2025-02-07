@@ -10,7 +10,8 @@
 from __future__ import print_function, absolute_import
 
 import math
-import numpy
+import numpy as np
+
 import scipy.integrate
 
 from .plane_interception import (
@@ -24,7 +25,7 @@ from .plane_interception import (
 
 def unit_vector(vector):
     """Returns the unit vector of the vector."""
-    return vector / numpy.linalg.norm(vector)
+    return vector / np.linalg.norm(vector)
 
 
 def angle_between(v1, v2):
@@ -40,7 +41,7 @@ def angle_between(v1, v2):
     """
     v1_u = unit_vector(v1)
     v2_u = unit_vector(v2)
-    return numpy.arccos(numpy.clip(numpy.dot(v1_u, v2_u), -1.0, 1.0))
+    return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
 
 
 def get_max_distance(node, nodes):
@@ -48,7 +49,7 @@ def get_max_distance(node, nodes):
     max_node = node
 
     for n in nodes:
-        distance = abs(numpy.linalg.norm(numpy.array(node) - numpy.array(n)))
+        distance = abs(np.linalg.norm(np.array(node) - np.array(n)))
         if distance >= max_distance:
             max_distance = distance
             max_node = n
@@ -68,7 +69,7 @@ def compute_curvilinear_abscissa(polyline, length):
     v = 0.0
     curvilinear_abscissa = [0]
     for n1, n2 in zip(polyline, polyline[1:]):
-        v += numpy.linalg.norm(numpy.array(n1) - numpy.array(n2))
+        v += np.linalg.norm(np.array(n1) - np.array(n2))
         curvilinear_abscissa.append(v / float(length))
 
     return curvilinear_abscissa
@@ -77,7 +78,7 @@ def compute_curvilinear_abscissa(polyline, length):
 def compute_length_organ(polyline):
     length = 0
     for n1, n2 in zip(polyline, polyline[1:]):
-        length += numpy.linalg.norm(numpy.array(n1) - numpy.array(n2))
+        length += np.linalg.norm(np.array(n1) - np.array(n2))
 
     return length
 
@@ -88,14 +89,14 @@ def compute_inclination_angle(polyline, step=1):
 
     length = 0
     for (x0, y0, z0), (x1, y1, z1) in zip(polyline[::step], polyline[step::step]):
-        length += numpy.linalg.norm(numpy.array((x1 - x0, y1 - y0, z1 - z0)))
+        length += np.linalg.norm(np.array((x1 - x0, y1 - y0, z1 - z0)))
 
     angles = []
-    z_axis = numpy.array([0, 0, 1])
+    z_axis = np.array([0, 0, 1])
 
     for (x0, y0, z0), (x1, y1, z1) in zip(polyline[::step], polyline[step::step]):
-        vector = numpy.array((x1 - x0, y1 - y0, z1 - z0))
-        norm = numpy.linalg.norm(vector)
+        vector = np.array((x1 - x0, y1 - y0, z1 - z0))
+        norm = np.linalg.norm(vector)
         angle = angle_between(z_axis, vector)
         angles.append(math.degrees(angle) * (norm / length))
 
@@ -107,10 +108,10 @@ def compute_inclination_angle(polyline, step=1):
 
 
 def compute_fitted_width(width, curvilinear_abscissa):
-    x = numpy.array(curvilinear_abscissa)
-    XX = numpy.vstack((x**2, x)).T
-    p_all = numpy.linalg.lstsq(XX, width[::-1], rcond=None)[0]
-    fitted_width = numpy.dot(p_all, XX.T)
+    x = np.array(curvilinear_abscissa)
+    XX = np.vstack((x**2, x)).T
+    p_all = np.linalg.lstsq(XX, width[::-1], rcond=None)[0]
+    fitted_width = np.dot(p_all, XX.T)
 
     return fitted_width
 
@@ -125,7 +126,7 @@ def compute_vector_mean(polyline):
         v = (xx - x, yy - y, zz - z)
         vectors.append(v)
 
-    vector_mean = numpy.array(vectors).mean(axis=0)
+    vector_mean = np.array(vectors).mean(axis=0)
 
     return vector_mean
 
@@ -146,7 +147,7 @@ def compute_insertion_angle(polyline, stem_vector_mean):
         xx, yy, zz = polyline[i]
         vectors.append((xx - x, yy - y, zz - z))
 
-    insertion_vector = numpy.array(vectors).mean(axis=0)
+    insertion_vector = np.array(vectors).mean(axis=0)
     insertion_angle = angle_between(insertion_vector, stem_vector_mean)
     insertion_angle = math.degrees(insertion_angle)
 
@@ -169,22 +170,22 @@ def voxel_base_height(vo, polyline, min_distance=30):
     """
 
     # all voxels
-    vxs = numpy.array(list(vo.voxels_position()))
+    vxs = np.array(list(vo.voxels_position()))
 
     # only voxels with distance to polyline the lowest point < min_distance
     vxs2 = []
     for x, y, z in vxs:
         # TODO : approx ?
         # TODO : param min_distance depending on leaf length ?
-        x_stem, y_stem, _ = polyline[numpy.argmin(numpy.abs(polyline[:, 2] - z))]
-        if numpy.sqrt((x_stem - x) ** 2 + (y_stem - y) ** 2) < min_distance:
+        x_stem, y_stem, _ = polyline[np.argmin(np.abs(polyline[:, 2] - z))]
+        if np.sqrt((x_stem - x) ** 2 + (y_stem - y) ** 2) < min_distance:
             vxs2.append([x, y, z])
-    vxs2 = numpy.array(vxs2)
+    vxs2 = np.array(vxs2)
 
     if vxs2.size == 0:
         height = vo.info["pm_position_base"]
     else:
-        height = vxs2[numpy.argsort(vxs2[:, 2])][0]
+        height = vxs2[np.argsort(vxs2[:, 2])][0]
 
     return height
 
@@ -243,7 +244,7 @@ def maize_stem_analysis(vo, voxels_size, distance_plane=0.75):
     # Compute height of the leaf
 
     closest_nodes, _ = intercept_points_along_path_with_planes(
-        numpy.array(list(voxels_position)),
+        np.array(list(voxels_position)),
         polyline,
         distance_from_plane=distance_plane * voxels_size,
         without_connection=True,
@@ -268,7 +269,7 @@ def maize_mature_leaf_analysis(vo, voxels_size, stem_vector_mean, distance_plane
     # Compute height of the leaf
 
     closest_nodes, _ = intercept_points_along_path_with_planes(
-        numpy.array(list(voxels_position)),
+        np.array(list(voxels_position)),
         polyline,
         distance_from_plane=distance_plane * voxels_size,
         voxels_size=voxels_size,
@@ -292,7 +293,7 @@ def maize_growing_leaf_analysis_real_length(maize_segmented, vo):
     voxels = maize_segmented.get_voxels_position(except_organs=[vo])
     longest_polyline = vo.get_longest_segment().polyline
     voxels = set(voxels).intersection(longest_polyline)
-    z = numpy.max(numpy.array(list(voxels))[:, 2])
+    z = np.max(np.array(list(voxels))[:, 2])
     return z
 
 
@@ -312,7 +313,7 @@ def maize_growing_leaf_analysis(
     # ==========================================================================
     # Compute height of the leaf
     closest_nodes, _ = intercept_points_along_path_with_planes(
-        numpy.array(list(voxels_position)),
+        np.array(list(voxels_position)),
         polyline,
         distance_from_plane=distance_plane * voxels_size,
         voxels_size=voxels_size,
@@ -355,10 +356,13 @@ def maize_analysis(maize_segmented):
 
     voxels_size = maize_segmented.voxels_size
     for vo in maize_segmented.voxel_organs:
-        vo.info = {"pm_label": vo.label, "pm_sub_label": vo.sub_label,
-                   "pm_voxels_volume": (
-                           len(vo.voxels_position()) * maize_segmented.voxels_size ** 3
-                   )}
+        vo.info = {
+            "pm_label": vo.label,
+            "pm_sub_label": vo.sub_label,
+            "pm_voxels_volume": (
+                len(vo.voxels_position()) * maize_segmented.voxels_size**3
+            ),
+        }
 
     # ==========================================================================
 
@@ -368,7 +372,7 @@ def maize_analysis(maize_segmented):
     # ==========================================================================
 
     mature_leafs = []
-    stem_polyline = numpy.array(
+    stem_polyline = np.array(
         list(maize_segmented.get_stem().get_highest_polyline().polyline)
     )
     for vo_mature_leaf in maize_segmented.get_mature_leafs():

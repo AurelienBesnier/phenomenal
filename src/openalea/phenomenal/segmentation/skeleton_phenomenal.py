@@ -9,8 +9,13 @@
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
-import numpy
+import numpy as np
 import networkx
+
+try:
+    import nx_cugraph as networkx
+except ImportError:
+    pass
 
 import openalea.phenomenal.segmentation._c_skeleton as c_skeleton
 
@@ -66,17 +71,17 @@ def segment_reduction(
     list_array = [None] * len_segments * len_images
     for i, vs in enumerate(orderer_voxel_segments):
         for j, (image, projection) in enumerate(image_projection):
-            vp = numpy.array(list(vs.voxels_position))
+            vp = np.array(list(vs.voxels_position))
             list_array[i * len_images + j] = project_voxel_centers_on_image(
                 vp,
                 voxel_skeleton.voxels_size,
                 image.shape,
                 projection,
-                dtype=numpy.int32,
+                dtype=np.int32,
                 value=1,
             )
 
-            # vp = numpy.array([vs.polyline[-1]])
+            # vp = np.array([vs.polyline[-1]])
             # tips[(i, j)] = openalea.phenomenal.multi_view_reconstruction. \
             #     project_voxel_centers_on_image(
             #     vp,
@@ -91,7 +96,7 @@ def segment_reduction(
 
     list_negative_image = []
     for j, (image, projection) in enumerate(image_projection):
-        negative_image = image.copy().astype(numpy.int32)
+        negative_image = image.copy().astype(np.int32)
         negative_image[negative_image > 0] = 2
         negative_image[negative_image == 0] = 1
         negative_image[negative_image == 2] = 0
@@ -103,7 +108,7 @@ def segment_reduction(
     # ==========================================================================
     # start = time.time()
 
-    is_removed = numpy.zeros(len_segments, dtype=numpy.uint8)
+    is_removed = np.zeros(len_segments, dtype=np.uint8)
 
     c_skeleton.skeletonize(
         list_array, is_removed, len_segments, len_images, nb_min_pixel, required_visible
@@ -116,7 +121,7 @@ def segment_reduction(
     return VoxelSkeleton(segments, voxel_skeleton.voxels_size)
 
     # ==========================================================================
-    # is_removed = numpy.zeros(len_segments, dtype=numpy.uint8)
+    # is_removed = np.zeros(len_segments, dtype=np.uint8)
     #
     # for i in range(len_segments):
     #     weight = 0
@@ -126,7 +131,7 @@ def segment_reduction(
     #             if k != i and not is_removed[k]:
     #                 im -= list_array[k * len_images + j]
     #
-    #         if numpy.count_nonzero(im > 0) >= nb_min_pixel:
+    #         if np.count_nonzero(im > 0) >= nb_min_pixel:
     #             weight += 1
     #
     #         if weight >= required_visible:
@@ -234,23 +239,23 @@ def find_base_stem_position(voxels_position, voxels_size, neighbor_size=45):
         :,
     ]
 
-    xx, yy, zz = numpy.where(roi == 1)
+    xx, yy, zz = np.where(roi == 1)
 
-    min_z_value = numpy.min(zz)
-    index_min_z_value = numpy.where(zz == min_z_value)
-    mean_float_point = numpy.array(
+    min_z_value = np.min(zz)
+    index_min_z_value = np.where(zz == min_z_value)
+    mean_float_point = np.array(
         [
-            numpy.mean(xx[index_min_z_value]),
-            numpy.mean(yy[index_min_z_value]),
-            numpy.mean(zz[index_min_z_value]),
+            np.mean(xx[index_min_z_value]),
+            np.mean(yy[index_min_z_value]),
+            np.mean(zz[index_min_z_value]),
         ]
     )
 
     mean_point = None
     min_dist = float("inf")
     for xxx, yyy, zzz in zip(xx, yy, zz):
-        pt = numpy.array([xxx, yyy, zzz])
-        dist = numpy.linalg.norm(mean_float_point - pt)
+        pt = np.array([xxx, yyy, zzz])
+        dist = np.linalg.norm(mean_float_point - pt)
         if dist < min_dist:
             min_dist = dist
             mean_point = pt
@@ -262,7 +267,7 @@ def find_base_stem_position(voxels_position, voxels_size, neighbor_size=45):
     )
 
     base_stem_position = (
-        numpy.array(stem_base_position) * voxels_size + image_3d.world_coordinate
+        np.array(stem_base_position) * voxels_size + image_3d.world_coordinate
     )
 
     return base_stem_position
@@ -357,7 +362,7 @@ def skeletonize(
     if voxels_position_remain is None:
         voxels_position_remain = subgraph.nodes()
 
-    np_arr_all_graph_voxels_plant = numpy.array(graph.nodes())
+    np_arr_all_graph_voxels_plant = np.array(graph.nodes())
     # ==========================================================================
 
     segments = []

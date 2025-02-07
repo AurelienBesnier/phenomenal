@@ -15,12 +15,17 @@ of Kalman Palagyi and Attila Kuba implementation
 # ==============================================================================
 from __future__ import division, print_function, absolute_import
 
-import numpy
+import numpy as np
+
+try:
+    import cupy as np
+except ImportError:
+    pass
 # ==============================================================================
 
 
 def _build_mask():
-    M1 = numpy.array(
+    M1 = np.array(
         [
             [["x", "x", "0"], ["x", "x", "0"], ["x", "x", "0"]],
             [["x", "x", "0"], ["1", "1", "0"], ["x", "x", "0"]],
@@ -28,7 +33,7 @@ def _build_mask():
         ]
     )
 
-    M2 = numpy.array(
+    M2 = np.array(
         [
             [[".", ".", "0"], [".", ".", "0"], [".", ".", "0"]],
             [[".", ".", "0"], ["1", "1", "0"], [".", ".", "0"]],
@@ -36,7 +41,7 @@ def _build_mask():
         ]
     )
 
-    M3 = numpy.array(
+    M3 = np.array(
         [
             [[".", ".", "0"], [".", ".", "0"], [".", ".", "."]],
             [[".", ".", "0"], ["1", "1", "0"], [".", "1", "."]],
@@ -44,7 +49,7 @@ def _build_mask():
         ]
     )
 
-    M4 = numpy.array(
+    M4 = np.array(
         [
             [[".", ".", "0"], [".", ".", "0"], [".", ".", "0"]],
             [[".", ".", "0"], ["1", "1", "0"], [".", ".", "0"]],
@@ -52,7 +57,7 @@ def _build_mask():
         ]
     )
 
-    M5 = numpy.array(
+    M5 = np.array(
         [
             [["0", "0", "0"], ["0", "0", "0"], ["0", "0", "0"]],
             [["x", "x", "0"], ["0", "1", "0"], ["x", "x", "0"]],
@@ -60,7 +65,7 @@ def _build_mask():
         ]
     )
 
-    M6 = numpy.array(
+    M6 = np.array(
         [
             [["0", "0", "0"], ["0", "0", "0"], [".", ".", "0"]],
             [["0", "0", "0"], ["0", "1", "0"], ["1", ".", "0"]],
@@ -80,15 +85,15 @@ def _build_mask():
     S = []
 
     for M in U:
-        tmp = numpy.zeros_like(M)
-        tmp[0, :, :] = numpy.rot90(M[0, :, :], 1)
-        tmp[1, :, :] = numpy.rot90(M[1, :, :], 1)
-        tmp[2, :, :] = numpy.rot90(M[2, :, :], 1)
+        tmp = np.zeros_like(M)
+        tmp[0, :, :] = np.rot90(M[0, :, :], 1)
+        tmp[1, :, :] = np.rot90(M[1, :, :], 1)
+        tmp[2, :, :] = np.rot90(M[2, :, :], 1)
 
         W.append(tmp)
-        N.append(numpy.rot90(tmp))
-        E.append(numpy.rot90(tmp, 2))
-        S.append(numpy.rot90(tmp, 3))
+        N.append(np.rot90(tmp))
+        E.append(np.rot90(tmp, 2))
+        S.append(np.rot90(tmp, 3))
 
     return U, D, N, S, E, W
 
@@ -118,8 +123,8 @@ def _check_mask(T, M):
 
 
 def _applied_masks(mat, masks):
-    tmp = numpy.zeros_like(mat)
-    xx, yy, zz = numpy.where(mat == 1)
+    tmp = np.zeros_like(mat)
+    xx, yy, zz = np.where(mat == 1)
     for i, xx_val in enumerate(xx):
         x, y, z = xx_val, yy[i], zz[i]
         block = mat[x - 1 : x + 2, y - 1 : y + 2, z - 1 : z + 2]
@@ -146,7 +151,7 @@ def skeletonize_thinning(img):
     """
 
     mat_len_x, mat_len_y, mat_len_z = img.shape
-    mat_tmp = numpy.zeros((mat_len_x + 2, mat_len_y + 2, mat_len_z + 2), dtype=int)
+    mat_tmp = np.zeros((mat_len_x + 2, mat_len_y + 2, mat_len_z + 2), dtype=int)
     mat_tmp[1:-1, 1:-1, 1:-1] = img.astype(int)
 
     U, D, N, S, E, W = _build_mask()
@@ -156,7 +161,7 @@ def skeletonize_thinning(img):
     j = 0
     while True:
         j += 1
-        nb1 = numpy.count_nonzero(mat_tmp)
+        nb1 = np.count_nonzero(mat_tmp)
         mat_tmp = _applied_masks(mat_tmp, U)
         mat_tmp = _applied_masks(mat_tmp, D)
         mat_tmp = _applied_masks(mat_tmp, N)
@@ -164,7 +169,7 @@ def skeletonize_thinning(img):
         mat_tmp = _applied_masks(mat_tmp, E)
         mat_tmp = _applied_masks(mat_tmp, W)
 
-        nb2 = numpy.count_nonzero(mat_tmp)
+        nb2 = np.count_nonzero(mat_tmp)
         if nb1 == nb2:
             break
 

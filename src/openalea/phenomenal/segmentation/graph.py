@@ -10,7 +10,14 @@
 from __future__ import division, print_function, absolute_import
 
 import networkx
-import numpy
+import numpy as np
+
+try:
+    import nx_cugraph as networkx
+except ImportError:
+    pass
+
+
 import sklearn.feature_extraction.image
 import sklearn.neighbors
 
@@ -51,7 +58,7 @@ def connect_all_node_with_nearest_neighbors(graph):
         for nodes in nodes_connected_component:
             distance, index_nodes = neigh.kneighbors(nodes)
 
-            index_min = int(numpy.argmin(distance))
+            index_min = int(np.argmin(distance))
             dist = distance[index_min][0]
             if dist < min_dist:
                 min_dist = dist
@@ -84,7 +91,7 @@ def create_graph(voxels_position, voxels_size):
     graph.add_nodes_from(voxels_position)
 
     vs = voxels_size
-    neighbors = numpy.array(
+    neighbors = np.array(
         [
             (-vs, -vs, -vs),
             (-vs, -vs, 0),
@@ -115,8 +122,8 @@ def create_graph(voxels_position, voxels_size):
         ]
     )
 
-    arr_vs = numpy.array(voxels_position)
-    distances = numpy.linalg.norm(neighbors, axis=1)
+    arr_vs = np.array(voxels_position)
+    distances = np.linalg.norm(neighbors, axis=1)
 
     for i, pt in enumerate(voxels_position):
         neighbors_position = list(map(tuple, neighbors + arr_vs[i]))
@@ -149,7 +156,7 @@ def _create_graph_with_sklearn(voxels_position, voxels_size):
 
     graph = networkx.from_scipy_sparse_matrix(sparse_matrix)
 
-    indices = numpy.where(image.ravel() >= 1)
+    indices = np.where(image.ravel() >= 1)
 
     indices = list(indices[0])
     graph = graph.subgraph(indices)
@@ -182,6 +189,9 @@ def graph_from_voxel_grid(voxel_grid, connect_all_point=True):
     """
     voxels_size = voxel_grid.voxels_size
     voxels_position = list(map(tuple, list(voxel_grid.voxels_position)))
+    
+    # print(voxel_grid.voxels_position)
+    # print(voxels_position)
 
     # ==========================================================================
     # Graph creation

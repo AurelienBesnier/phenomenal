@@ -10,9 +10,16 @@
 from __future__ import division, print_function, absolute_import
 
 import math
-import numpy
+import numpy as np
+
 import networkx
 import scipy
+
+try:
+    import nx_cugraph as networkx
+except ImportError:
+    pass
+
 # ==============================================================================
 
 
@@ -46,7 +53,7 @@ def max_distance_from_point_to_points(points, src_point):
     if len(points) == 0:
         return 0
 
-    result = scipy.spatial.distance.cdist(numpy.array([src_point]), points, "euclidean")
+    result = scipy.spatial.distance.cdist(np.array([src_point]), points, "euclidean")
 
     if len(result) > 0:
         return result.max()
@@ -90,12 +97,12 @@ def connected_voxel_with_point(voxels_point, voxels_size, src_voxel_point):
     :param src_voxel_point: position x, y, z of voxel point
     """
     closest_node, nodes = [], []
-    nodes.append(numpy.array(src_voxel_point))
+    nodes.append(np.array(src_voxel_point))
     while nodes:
         node = nodes.pop()
         rr = abs(voxels_point - node)
 
-        index = numpy.where(
+        index = np.where(
             (rr[:, 0] <= voxels_size)
             & (rr[:, 1] <= voxels_size)
             & (rr[:, 2] <= voxels_size)
@@ -104,7 +111,7 @@ def connected_voxel_with_point(voxels_point, voxels_size, src_voxel_point):
         nodes += list(voxels_point[index])
         closest_node += list(voxels_point[index])
 
-        voxels_point = numpy.delete(voxels_point, index, 0)
+        voxels_point = np.delete(voxels_point, index, 0)
 
         if voxels_point.size == 0:
             break
@@ -143,12 +150,12 @@ def intercept_points_from_src_point_with_plane_equation(
         )
     )
 
-    index = numpy.where(res < distance_from_plane)[0]
+    index = np.where(res < distance_from_plane)[0]
     closest_voxel = points[index]
 
     if distance_from_src_point is not None:
-        res = numpy.linalg.norm(closest_voxel - src_point, axis=1)
-        index = numpy.where(res < distance_from_src_point)[0]
+        res = np.linalg.norm(closest_voxel - src_point, axis=1)
+        index = np.where(res < distance_from_src_point)[0]
         closest_voxel = closest_voxel[index]
 
     return closest_voxel
@@ -198,7 +205,7 @@ def orientation_vector_of_point_in_polyline(polyline, index_point, windows_size)
         x2, y2, z2 = polyline[min(length_polyline - 1, index_point + j)]
         vectors.append((x2 - x1, y2 - y1, z2 - z1))
 
-    orientation_vector = numpy.array(vectors).astype(float).mean(axis=0)
+    orientation_vector = np.array(vectors).astype(float).mean(axis=0)
 
     return orientation_vector
 
@@ -232,7 +239,7 @@ def intercept_points_along_path_with_planes(
         if i < length_polyline - 1 and with_relative_distance:
             nodes = intercepted_points[i + 1]
             prev_radius_dist = max_distance_from_point_to_points(
-                numpy.array(list(nodes)), polyline[i + 1]
+                np.array(list(nodes)), polyline[i + 1]
             )
 
             if prev_radius_dist == 0:
@@ -277,8 +284,8 @@ def intercept_points_with_ball(points, ball_center, ball_radius):
     :return: list of intercepted points
     """
     # Compute points in the ball
-    points_distance_from_point = numpy.linalg.norm(points - ball_center, axis=1)
-    index = numpy.where(points_distance_from_point < ball_radius)
+    points_distance_from_point = np.linalg.norm(points - ball_center, axis=1)
+    index = np.where(points_distance_from_point < ball_radius)
 
     return points[index]
 
